@@ -2,6 +2,7 @@ mod expect_exit;
 mod mojang_options;
 
 use std::env::args;
+use std::fmt::Write;
 use std::io::{ErrorKind, Result};
 use std::path::{Path, PathBuf};
 
@@ -74,7 +75,11 @@ fn print_mode(db: &mut DB) -> Result<()> {
             continue;
         }
 
-        println!("{:?}", key);
+        let key_id: &[u8] = &key[ACTOR_PREFIX_HEADER.as_bytes().len()..];
+        let key_id_str: String = to_hex_string(&key_id);
+        let key_str: String = format!("{}_{}", ACTOR_PREFIX_HEADER, key_id_str);
+
+        println!("{}", key_str);
 
         // print!("{:?}", value);
     }
@@ -84,4 +89,12 @@ fn print_mode(db: &mut DB) -> Result<()> {
 
 fn revive_mode(db: &mut DB) -> Result<()> {
     Ok(())
+}
+
+fn to_hex_string(bytes: &[u8]) -> String {
+    let mut hex_string: String = String::with_capacity(bytes.len() * 2);
+    for byte in bytes {
+        write!(&mut hex_string, "{:02x}", byte).unwrap();
+    }
+    hex_string
 }
