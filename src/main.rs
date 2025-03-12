@@ -65,16 +65,16 @@ fn print_mode(db: &mut DB) -> Result<()> {
     println!("Searching for entity entries...");
 
     while iter.valid() {
-        let (key, value): (String, Vec<u8>) = match iter.next() {
-            Some((key, value)) => (String::from_utf8_lossy(&key).to_string(), value),
+        let (key, value): (Vec<u8>, Vec<u8>) = match iter.next() {
+            Some(entry) => entry,
             None => break,
         };
 
-        if !key.contains(ACTOR_PREFIX_HEADER) {
+        if !key.starts_with(ACTOR_PREFIX_HEADER.as_bytes()) {
             continue;
         }
 
-        println!("{key}");
+        println!("{:?}", key);
 
         // print!("{:?}", value);
     }
