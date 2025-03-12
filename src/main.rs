@@ -9,6 +9,8 @@ use crate::expect_exit::ExpectExit;
 use crate::mojang_options::mojang_options;
 use rusty_leveldb::{DBIterator, LdbIterator, Options, DB};
 
+static ACTOR_PREFIX_HEADER: &str = "actorprefix";
+
 enum EditMode {
     Print,
     Revive,
@@ -68,7 +70,7 @@ fn print_mode(db: &mut DB) -> Result<()> {
             None => break,
         };
 
-        if !key.contains("actorprefix") {
+        if !key.contains(ACTOR_PREFIX_HEADER) {
             continue;
         }
 
