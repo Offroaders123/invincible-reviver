@@ -1,12 +1,13 @@
 mod expect_exit;
+mod hex_string;
 mod mojang_options;
 
 use std::env::args;
-use std::fmt::Write;
 use std::io::{ErrorKind, Result};
 use std::path::{Path, PathBuf};
 
 use crate::expect_exit::ExpectExit;
+use crate::hex_string::HexString;
 use crate::mojang_options::mojang_options;
 use rusty_leveldb::{DBIterator, LdbIterator, Options, DB};
 
@@ -76,7 +77,7 @@ fn print_mode(db: &mut DB) -> Result<()> {
         }
 
         let key_id: &[u8] = &key[ACTOR_PREFIX_HEADER.as_bytes().len()..];
-        let key_id_str: String = to_hex_string(&key_id);
+        let key_id_str: &String = &key_id.to_hex_lowercase();
         let key_str: String = format!("{}_{}", ACTOR_PREFIX_HEADER, key_id_str);
 
         println!("{}", key_str);
@@ -89,12 +90,4 @@ fn print_mode(db: &mut DB) -> Result<()> {
 
 fn revive_mode(db: &mut DB) -> Result<()> {
     Ok(())
-}
-
-fn to_hex_string(bytes: &[u8]) -> String {
-    let mut hex_string: String = String::with_capacity(bytes.len() * 2);
-    for byte in bytes {
-        write!(&mut hex_string, "{:02x}", byte).unwrap();
-    }
-    hex_string
 }
