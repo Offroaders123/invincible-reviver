@@ -4,5 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+bedrock-hematite-nbt = "0.4.2"
 miniz_oxide = "0.8.3"
 rusty-leveldb = "3.0.2"
