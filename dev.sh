@@ -1,1 +1,1 @@
-cargo watch --clear --quiet --exec "run --quiet -- './test/world/Chromebook Survival' --write" --ignore "*/world/**/*"
+cargo watch --clear --quiet --exec "run --quiet -- './test/world/Chromebook Survival' --print" --ignore "*/world/**/*"
