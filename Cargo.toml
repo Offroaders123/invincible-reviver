@@ -1,0 +1,8 @@
+[package]
+name = "invincible-reviver"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+miniz_oxide = "0.8.3"
+rusty-leveldb = "3.0.2"
