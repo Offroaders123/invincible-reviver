@@ -74,7 +74,7 @@ fn print_mode(db: &mut DB) -> Result<()> {
 
         println!("{key}");
 
-        print!("{:?}", value);
+        // print!("{:?}", value);
     }
 
     Ok(())
