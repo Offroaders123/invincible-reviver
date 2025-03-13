@@ -76,9 +76,7 @@ fn print_mode(db: &mut DB) -> Result<()> {
             continue;
         }
 
-        let key_id: &[u8] = &key[ACTOR_PREFIX_HEADER.as_bytes().len()..];
-        let key_id_str: &String = &key_id.to_hex_lowercase();
-        let key_str: String = format!("{}_{}", ACTOR_PREFIX_HEADER, key_id_str);
+        let key_str: String = to_pretty_key(&key);
 
         println!("{}", key_str);
 
@@ -90,4 +88,11 @@ fn print_mode(db: &mut DB) -> Result<()> {
 
 fn revive_mode(db: &mut DB) -> Result<()> {
     Ok(())
+}
+
+fn to_pretty_key(key: &[u8]) -> String {
+    let key_id: &[u8] = &key[ACTOR_PREFIX_HEADER.as_bytes().len()..];
+    let key_id_str: &String = &key_id.to_hex_lowercase();
+    let key_str: String = format!("{}_{}", ACTOR_PREFIX_HEADER, key_id_str);
+    key_str
 }
