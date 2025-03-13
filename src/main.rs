@@ -3,7 +3,7 @@ mod hex_string;
 mod mojang_options;
 
 use std::env::args;
-use std::io::{Cursor, ErrorKind, Result};
+use std::io::{Cursor, Error, ErrorKind, Result};
 use std::path::{Path, PathBuf};
 
 use crate::expect_exit::ExpectExit;
@@ -67,7 +67,7 @@ fn print_mode(db: &mut DB) -> Result<()> {
     for (key, value) in entities {
         let key_str: String = to_pretty_key(&key);
 
-        let nbt: Blob = match read_nbt(value) {
+        let nbt: Blob = match parse_nbt(value) {
             Ok(blob) => blob,
             Err(err) => {
                 println!("NBT parsing issue for {key_str}: {:?}", err);
@@ -75,17 +75,10 @@ fn print_mode(db: &mut DB) -> Result<()> {
             }
         };
 
-        let dead: bool = match nbt.get("Dead") {
-            Some(value) => match value {
-                Value::Byte(value) => *value != 0,
-                value => {
-                    let tag_name: &str = value.tag_name();
-                    println!("{key_str}: 'Dead' value is not the correct type, expected 'TAG_Byte', encountered '{tag_name}'");
-                    continue;
-                }
-            },
-            None => {
-                println!("{key_str}: 'Dead' key not found");
+        let dead: bool = match extract_dead(&nbt) {
+            Ok(dead) => dead,
+            Err(err) => {
+                println!("{key_str}: {}", err);
                 continue;
             }
         };
@@ -96,6 +89,29 @@ fn print_mode(db: &mut DB) -> Result<()> {
     }
 
     Ok(())
+}
+
+// Parses NBT, wrapping errors in `std::io::Error`
+fn parse_nbt(value: Vec<u8>) -> Result<Blob> {
+    read_nbt(value)
+        .map_err(|err| Error::new(ErrorKind::Other, format!("Failed to parse NBT: {:?}", err)))
+}
+
+// Extracts the 'Dead' flag from the NBT structure, returning an `std::io::Error` on failure
+fn extract_dead(nbt: &Blob) -> Result<bool> {
+    match nbt.get("Dead") {
+        Some(Value::Byte(value)) => Ok(*value != 0),
+        Some(value) => {
+            let tag_name: &str = value.tag_name();
+            Err(Error::new(
+                ErrorKind::Other,
+                format!(
+                    "'Dead' value is not the correct type, expected 'TAG_Byte', encountered '{tag_name}'"
+                ),
+            ))
+        }
+        None => Err(Error::new(ErrorKind::Other, "'Dead' key not found")),
+    }
 }
 
 fn revive_mode(db: &mut DB) -> Result<()> {
