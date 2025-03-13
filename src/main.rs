@@ -60,23 +60,11 @@ fn main() -> Result<()> {
 }
 
 fn print_mode(db: &mut DB) -> Result<()> {
-    let mut iter: DBIterator = db
-        .new_iter()
-        .expect_exit("Failed to create database iterator");
-    iter.seek_to_first();
-
     println!("Searching for entity entries...");
 
-    while iter.valid() {
-        let (key, value): (Vec<u8>, Vec<u8>) = match iter.next() {
-            Some(entry) => entry,
-            None => break,
-        };
+    let entities: Vec<(Vec<u8>, Vec<u8>)> = find_entity_entries(db)?;
 
-        if !key.starts_with(ACTOR_PREFIX_HEADER.as_bytes()) {
-            continue;
-        }
-
+    for (key, value) in entities {
         let key_str: String = to_pretty_key(&key);
 
         println!("{}", key_str);
@@ -107,6 +95,30 @@ fn print_mode(db: &mut DB) -> Result<()> {
 
 fn revive_mode(db: &mut DB) -> Result<()> {
     Ok(())
+}
+
+fn find_entity_entries(db: &mut DB) -> Result<Vec<(Vec<u8>, Vec<u8>)>> {
+    let mut entities: Vec<(Vec<u8>, Vec<u8>)> = Vec::new();
+
+    let mut iter: DBIterator = db
+        .new_iter()
+        .expect_exit("Failed to create database iterator");
+    iter.seek_to_first();
+
+    while iter.valid() {
+        let (key, value): (Vec<u8>, Vec<u8>) = match iter.next() {
+            Some(entry) => entry,
+            None => break,
+        };
+
+        if !key.starts_with(ACTOR_PREFIX_HEADER.as_bytes()) {
+            continue;
+        }
+
+        entities.push((key, value));
+    }
+
+    Ok(entities)
 }
 
 fn to_pretty_key(key: &[u8]) -> String {
