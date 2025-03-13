@@ -81,8 +81,7 @@ fn print_mode(db: &mut DB) -> Result<()> {
 
         println!("{}", key_str);
 
-        let reader: Cursor<Vec<u8>> = Cursor::new(value);
-        let nbt: Blob = match from_reader(reader, Endianness::LittleEndian) {
+        let nbt: Blob = match read_nbt(value) {
             Ok(blob) => blob,
             Err(err) => {
                 println!("NBT parsing issue for {:#?}: {:?}", key_str, err);
@@ -105,4 +104,9 @@ fn to_pretty_key(key: &[u8]) -> String {
     let key_id_str: &String = &key_id.to_hex_lowercase();
     let key_str: String = format!("{}_{}", ACTOR_PREFIX_HEADER, key_id_str);
     key_str
+}
+
+fn read_nbt(value: Vec<u8>) -> nbt::Result<Blob> {
+    let reader: Cursor<Vec<u8>> = Cursor::new(value);
+    from_reader(reader, Endianness::LittleEndian)
 }
