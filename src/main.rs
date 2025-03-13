@@ -70,7 +70,7 @@ fn print_mode(db: &mut DB) -> Result<()> {
         let nbt: Blob = match read_nbt(value) {
             Ok(blob) => blob,
             Err(err) => {
-                println!("NBT parsing issue for {:#?}: {:?}", key_str, err);
+                println!("NBT parsing issue for {key_str}: {:?}", err);
                 continue;
             }
         };
@@ -80,17 +80,17 @@ fn print_mode(db: &mut DB) -> Result<()> {
                 Value::Byte(value) => *value != 0,
                 value => {
                     let tag_name: &str = value.tag_name();
-                    println!("{:#?}: 'Dead' value is not the correct type, expected 'TAG_Byte', encountered '{tag_name}'", key_str);
+                    println!("{key_str}: 'Dead' value is not the correct type, expected 'TAG_Byte', encountered '{tag_name}'");
                     continue;
                 }
             },
             None => {
-                println!("{:#?}: 'Dead' key not found", key_str);
+                println!("{key_str}: 'Dead' key not found");
                 continue;
             }
         };
 
-        println!("{}", key_str);
+        println!("{key_str}");
         // println!("{:#?}", nbt);
         println!("'Dead': {:?}", dead);
     }
