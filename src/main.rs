@@ -82,7 +82,13 @@ fn print_mode(db: &mut DB) -> Result<()> {
         println!("{}", key_str);
 
         let reader: Cursor<Vec<u8>> = Cursor::new(value);
-        let nbt: std::result::Result<Blob, nbt::Error> = from_reader(reader, Endianness::LittleEndian);
+        let nbt: Blob = match from_reader(reader, Endianness::LittleEndian) {
+            Ok(blob) => blob,
+            Err(err) => {
+                println!("NBT parsing issue for {:#?}: {:?}", key_str, err);
+                continue;
+            }
+        };
 
         print!("{:#?}", nbt);
     }
