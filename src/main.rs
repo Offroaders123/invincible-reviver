@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 use crate::expect_exit::ExpectExit;
 use crate::hex_string::HexString;
 use crate::mojang_options::mojang_options;
-use nbt::{from_reader, Blob, Endianness};
+use nbt::{from_reader, Blob, Endianness, Value};
 use rusty_leveldb::{DBIterator, LdbIterator, Options, DB};
 
 static ACTOR_PREFIX_HEADER: &str = "actorprefix";
@@ -89,7 +89,17 @@ fn print_mode(db: &mut DB) -> Result<()> {
             }
         };
 
-        print!("{:#?}", nbt);
+        // println!("{:#?}", nbt);
+
+        let dead: &Value = match nbt.get("Dead") {
+            Some(value) => value,
+            None => {
+                println!("{:#?}: 'Dead' value not found", key_str);
+                continue;
+            }
+        };
+
+        println!("'Dead': {:?}", dead);
     }
 
     Ok(())
