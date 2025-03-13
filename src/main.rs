@@ -67,8 +67,6 @@ fn print_mode(db: &mut DB) -> Result<()> {
     for (key, value) in entities {
         let key_str: String = to_pretty_key(&key);
 
-        println!("{}", key_str);
-
         let nbt: Blob = match read_nbt(value) {
             Ok(blob) => blob,
             Err(err) => {
@@ -77,16 +75,23 @@ fn print_mode(db: &mut DB) -> Result<()> {
             }
         };
 
-        // println!("{:#?}", nbt);
-
-        let dead: &Value = match nbt.get("Dead") {
-            Some(value) => value,
+        let dead: bool = match nbt.get("Dead") {
+            Some(value) => match value {
+                Value::Byte(value) => *value != 0,
+                value => {
+                    let tag_name: &str = value.tag_name();
+                    println!("{:#?}: 'Dead' value is not the correct type, expected 'TAG_Byte', encountered '{tag_name}'", key_str);
+                    continue;
+                }
+            },
             None => {
-                println!("{:#?}: 'Dead' value not found", key_str);
+                println!("{:#?}: 'Dead' key not found", key_str);
                 continue;
             }
         };
 
+        println!("{}", key_str);
+        // println!("{:#?}", nbt);
         println!("'Dead': {:?}", dead);
     }
 
