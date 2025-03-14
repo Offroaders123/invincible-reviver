@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 use crate::expect_exit::ExpectExit;
 use crate::hex_string::HexString;
 use crate::mojang_options::mojang_options;
-use nbt::{from_reader, Blob, Endianness, Value};
+use nbt::{from_reader, to_writer, Blob, Endianness, Value};
 use rusty_leveldb::{DBIterator, LdbIterator, Options, DB};
 
 static ACTOR_PREFIX_HEADER: &str = "actorprefix";
@@ -101,7 +101,7 @@ fn revive_mode(db: &mut DB) -> Result<()> {
     for (key, value) in entities {
         let key_str: String = to_pretty_key(&key);
 
-        let nbt: Blob = match read_nbt(value) {
+        let mut nbt: Blob = match read_nbt(value) {
             Ok(blob) => blob,
             Err(err) => {
                 println!("NBT parsing issue for {:?}: {}", key_str, err);
@@ -122,6 +122,24 @@ fn revive_mode(db: &mut DB) -> Result<()> {
         println!("{key_str} {decorator}");
         // println!("{:#?}", nbt);
         // println!("'Dead': {}", dead);
+
+        if !dead {
+            continue;
+        }
+
+        println!("Updating 'Dead' state for {:?}", key_str);
+
+        nbt.insert("Dead", Value::Byte(0))?;
+
+        let recompile: Vec<u8> = write_nbt(&nbt)?;
+
+        match db.put(&key, &recompile) {
+            Err(err) => {
+                println!("DB writing issue for {:?}: {err}", key_str);
+                continue;
+            }
+            _ => (),
+        };
     }
 
     Ok(())
@@ -174,4 +192,10 @@ fn get_dead_state(nbt: &Blob) -> Result<bool> {
         },
         None => Err(Error::new(ErrorKind::NotFound, "'Dead' key not found")),
     }
+}
+
+fn write_nbt(nbt: &Blob) -> Result<Vec<u8>> {
+    let mut value: Vec<u8> = Vec::new();
+    to_writer(&mut value, &nbt, None, Endianness::LittleEndian)?;
+    Ok(value)
 }
