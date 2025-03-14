@@ -70,7 +70,7 @@ fn print_mode(db: &mut DB) -> Result<()> {
         let nbt: Blob = match read_nbt(value) {
             Ok(blob) => blob,
             Err(err) => {
-                println!("NBT parsing issue for {key_str}: {:?}", err);
+                println!("NBT parsing issue for {:?}: {}", key_str, err);
                 continue;
             }
         };
@@ -85,7 +85,7 @@ fn print_mode(db: &mut DB) -> Result<()> {
 
         println!("{key_str}");
         // println!("{:#?}", nbt);
-        println!("'Dead': {:?}", dead);
+        println!("'Dead': {}", dead);
     }
 
     Ok(())
