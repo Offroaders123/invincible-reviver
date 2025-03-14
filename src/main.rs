@@ -65,29 +65,13 @@ fn print_mode(db: &mut DB) -> Result<()> {
     let entities: Vec<(Vec<u8>, Vec<u8>)> = find_entity_entries(db)?;
 
     for (key, value) in entities {
-        let key_str: String = to_pretty_key(&key);
-
-        let nbt: Blob = match read_nbt(value) {
-            Ok(blob) => blob,
+        match handle_entity(&key, value) {
             Err(err) => {
-                println!("NBT parsing issue for {:?}: {}", key_str, err);
+                println!("{err}");
                 continue;
             }
+            _ => (),
         };
-
-        let dead: bool = match get_dead_state(&nbt) {
-            Ok(value) => value,
-            Err(err) => {
-                println!("{key_str}: {err}");
-                continue;
-            }
-        };
-
-        let decorator: &str = if dead { "💀" } else { "🌱" };
-
-        println!("{key_str} {decorator}");
-        // println!("{:#?}", nbt);
-        // println!("'Dead': {}", dead);
     }
 
     Ok(())
@@ -99,29 +83,13 @@ fn revive_mode(db: &mut DB) -> Result<()> {
     let entities: Vec<(Vec<u8>, Vec<u8>)> = find_entity_entries(db)?;
 
     for (key, value) in entities {
-        let key_str: String = to_pretty_key(&key);
-
-        let mut nbt: Blob = match read_nbt(value) {
-            Ok(blob) => blob,
-            Err(err) => {
-                println!("NBT parsing issue for {:?}: {}", key_str, err);
-                continue;
-            }
-        };
-
-        let dead: bool = match get_dead_state(&nbt) {
+        let (key_str, mut nbt, dead): (String, Blob, bool) = match handle_entity(&key, value) {
             Ok(value) => value,
             Err(err) => {
-                println!("{key_str}: {err}");
+                println!("{err}");
                 continue;
             }
         };
-
-        let decorator: &str = if dead { "💀" } else { "🌱" };
-
-        println!("{key_str} {decorator}");
-        // println!("{:#?}", nbt);
-        // println!("'Dead': {}", dead);
 
         if !dead {
             continue;
@@ -167,6 +135,28 @@ fn find_entity_entries(db: &mut DB) -> Result<Vec<(Vec<u8>, Vec<u8>)>> {
     }
 
     Ok(entities)
+}
+
+fn handle_entity(key: &Vec<u8>, value: Vec<u8>) -> Result<(String, Blob, bool)> {
+    let key_str: String = to_pretty_key(&key);
+
+    let nbt: Blob = read_nbt(value).map_err(|err| {
+        Error::new(
+            ErrorKind::InvalidData,
+            format!("NBT parsing issue for {:?}: {}", key_str, err),
+        )
+    })?;
+
+    let dead: bool =
+        get_dead_state(&nbt).map_err(|err| Error::new(err.kind(), format!("{key_str}: {err}")))?;
+
+    let decorator: &str = if dead { "💀" } else { "🌱" };
+
+    println!("{key_str} {decorator}");
+    // println!("{:#?}", nbt);
+    // println!("'Dead': {}", dead);
+
+    Ok((key_str, nbt, dead))
 }
 
 fn to_pretty_key(key: &[u8]) -> String {
