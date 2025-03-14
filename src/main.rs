@@ -83,9 +83,11 @@ fn print_mode(db: &mut DB) -> Result<()> {
             }
         };
 
-        println!("{key_str}");
+        let decorator: &str = if dead { "💀" } else { "🌱" };
+
+        println!("{key_str} {decorator}");
         // println!("{:#?}", nbt);
-        println!("'Dead': {}", dead);
+        // println!("'Dead': {}", dead);
     }
 
     Ok(())
