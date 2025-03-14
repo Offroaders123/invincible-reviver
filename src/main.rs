@@ -2,6 +2,7 @@ mod expect_exit;
 mod hex_string;
 mod mojang_options;
 mod nbt_files;
+mod world_backup;
 
 use std::env::args;
 use std::io::{Error, ErrorKind, Result};
@@ -11,6 +12,7 @@ use crate::expect_exit::ExpectExit;
 use crate::hex_string::HexString;
 use crate::mojang_options::mojang_options;
 use crate::nbt_files::{read_nbt, write_nbt};
+use crate::world_backup::create_world_backup;
 use nbt::{Blob, Value};
 use rusty_leveldb::{DBIterator, LdbIterator, Options, DB};
 
@@ -41,6 +43,11 @@ fn main() -> Result<()> {
         _ => Err(ErrorKind::InvalidInput),
     }
     .expect_exit("Invalid action; '--print' or '--revive'");
+
+    match mode {
+        EditMode::Revive => create_world_backup()?,
+        _ => (),
+    };
 
     let db_dir: PathBuf = world_dir.join("db");
 
