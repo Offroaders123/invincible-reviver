@@ -3,7 +3,7 @@ mod hex_string;
 mod mojang_options;
 
 use std::env::args;
-use std::io::{Cursor, ErrorKind, Result};
+use std::io::{Cursor, Error, ErrorKind, Result};
 use std::path::{Path, PathBuf};
 
 use crate::expect_exit::ExpectExit;
@@ -75,17 +75,10 @@ fn print_mode(db: &mut DB) -> Result<()> {
             }
         };
 
-        let dead: bool = match nbt.get("Dead") {
-            Some(value) => match value {
-                Value::Byte(value) => *value != 0,
-                value => {
-                    let tag_name: &str = value.tag_name();
-                    println!("{key_str}: 'Dead' value is not the correct type, expected 'TAG_Byte', encountered '{tag_name}'");
-                    continue;
-                }
-            },
-            None => {
-                println!("{key_str}: 'Dead' key not found");
+        let dead: bool = match get_dead_state(&nbt) {
+            Ok(value) => value,
+            Err(err) => {
+                println!("{key_str}: {err}");
                 continue;
             }
         };
@@ -136,4 +129,17 @@ fn to_pretty_key(key: &[u8]) -> String {
 fn read_nbt(value: Vec<u8>) -> nbt::Result<Blob> {
     let reader: Cursor<Vec<u8>> = Cursor::new(value);
     from_reader(reader, Endianness::LittleEndian)
+}
+
+fn get_dead_state(nbt: &Blob) -> Result<bool> {
+    match nbt.get("Dead") {
+        Some(value) => match value {
+            Value::Byte(value) => Ok(*value != 0),
+            value => {
+                let tag_name: &str = value.tag_name();
+                Err(Error::new(ErrorKind::InvalidData, format!("'Dead' value is not the correct type, expected 'TAG_Byte', encountered '{tag_name}'")))
+            }?,
+        },
+        None => Err(Error::new(ErrorKind::NotFound, "'Dead' key not found")),
+    }
 }
