@@ -94,6 +94,36 @@ fn print_mode(db: &mut DB) -> Result<()> {
 }
 
 fn revive_mode(db: &mut DB) -> Result<()> {
+    println!("Searching for entity entries...");
+
+    let entities: Vec<(Vec<u8>, Vec<u8>)> = find_entity_entries(db)?;
+
+    for (key, value) in entities {
+        let key_str: String = to_pretty_key(&key);
+
+        let nbt: Blob = match read_nbt(value) {
+            Ok(blob) => blob,
+            Err(err) => {
+                println!("NBT parsing issue for {:?}: {}", key_str, err);
+                continue;
+            }
+        };
+
+        let dead: bool = match get_dead_state(&nbt) {
+            Ok(value) => value,
+            Err(err) => {
+                println!("{key_str}: {err}");
+                continue;
+            }
+        };
+
+        let decorator: &str = if dead { "💀" } else { "🌱" };
+
+        println!("{key_str} {decorator}");
+        // println!("{:#?}", nbt);
+        // println!("'Dead': {}", dead);
+    }
+
     Ok(())
 }
 
