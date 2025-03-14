@@ -1,15 +1,17 @@
 mod expect_exit;
 mod hex_string;
 mod mojang_options;
+mod nbt_files;
 
 use std::env::args;
-use std::io::{Cursor, Error, ErrorKind, Result};
+use std::io::{Error, ErrorKind, Result};
 use std::path::{Path, PathBuf};
 
 use crate::expect_exit::ExpectExit;
 use crate::hex_string::HexString;
 use crate::mojang_options::mojang_options;
-use nbt::{from_reader, to_writer, Blob, Endianness, Value};
+use crate::nbt_files::{read_nbt, write_nbt};
+use nbt::{Blob, Value};
 use rusty_leveldb::{DBIterator, LdbIterator, Options, DB};
 
 static ACTOR_PREFIX_HEADER: &str = "actorprefix";
@@ -166,11 +168,6 @@ fn to_pretty_key(key: &[u8]) -> String {
     key_str
 }
 
-fn read_nbt(value: Vec<u8>) -> nbt::Result<Blob> {
-    let reader: Cursor<Vec<u8>> = Cursor::new(value);
-    from_reader(reader, Endianness::LittleEndian)
-}
-
 fn get_dead_state(nbt: &Blob) -> Result<bool> {
     match nbt.get("Dead") {
         Some(value) => match value {
@@ -182,10 +179,4 @@ fn get_dead_state(nbt: &Blob) -> Result<bool> {
         },
         None => Err(Error::new(ErrorKind::NotFound, "'Dead' key not found")),
     }
-}
-
-fn write_nbt(nbt: &Blob) -> Result<Vec<u8>> {
-    let mut value: Vec<u8> = Vec::new();
-    to_writer(&mut value, &nbt, None, Endianness::LittleEndian)?;
-    Ok(value)
 }
