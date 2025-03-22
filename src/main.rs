@@ -20,6 +20,7 @@ use rusty_leveldb::{DBIterator, LdbIterator, Options, DB};
 
 static ACTOR_PREFIX_HEADER: &str = "actorprefix";
 
+#[derive(Debug)]
 enum EditMode {
     Print,
     Revive,
@@ -46,6 +47,8 @@ fn main() -> Result<()> {
     }
     .expect_exit("Invalid action; '--print' or '--revive'");
 
+    println!("Mode: {:?}\n", mode);
+
     let backup: bool = !args.iter().any(|arg| arg == "--no-backup");
 
     match mode {
@@ -53,7 +56,7 @@ fn main() -> Result<()> {
             if backup {
                 create_world_backup(world_dir).expect_exit("Could not create world backup");
             } else {
-                println!("<backup skipped>");
+                println!("<backup skipped>\n");
             }
         }
         _ => (),
@@ -80,6 +83,8 @@ fn main() -> Result<()> {
     // This is temporary hopefully, seems to be a bug with `rusty-leveldb`.
     // https://github.com/dermesser/leveldb-rs/issues/54
     remove_file(lock_path).expect_exit("Could not remove database LOCK file");
+
+    println!("\nDone!");
 
     Ok(())
 }
@@ -120,7 +125,7 @@ fn revive_mode(db: &mut DB) -> Result<()> {
             continue;
         }
 
-        println!("Updating 'Dead' state for {:?}", key_str);
+        println!("Reviving...");
 
         nbt.insert("Dead", Value::Byte(0))?;
 

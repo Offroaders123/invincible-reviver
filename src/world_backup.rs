@@ -15,15 +15,15 @@ pub fn create_world_backup(world_dir: &Path) -> Result<()> {
     let timestamp: String = create_backup_timestamp();
     let filename: String = format!("{world_name} - {timestamp}.mcworld");
 
-    println!("{filename}");
+    // println!("{filename}");
 
     let parent_dir: &Path = world_dir
         .parent()
         .expect_exit("Could not extract directory path to world");
-    println!("{:?}, {:?}", world_dir, parent_dir);
+    // println!("{:?}, {:?}", world_dir, parent_dir);
 
     let output_file: PathBuf = parent_dir.join(filename);
-    println!("{:?}", output_file);
+    // println!("{:?}", output_file);
 
     create_archive(world_dir, &output_file).expect_exit("Could not create archive of world");
 
