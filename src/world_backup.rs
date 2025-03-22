@@ -4,12 +4,13 @@ use std::time::SystemTime;
 use chrono::{DateTime, Utc};
 use iso8601_timestamp::Timestamp;
 
-pub fn create_world_backup() -> Result<()> {
+pub fn create_world_backup(world_name: &str) -> Result<()> {
     println!("Making world backup...");
 
     let timestamp: String = create_backup_timestamp();
+    let filename: String = format!("{world_name} - {timestamp}.mcworld");
 
-    println!("{timestamp}");
+    println!("{filename}");
 
     println!("<to be implemented>");
 

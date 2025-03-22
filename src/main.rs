@@ -5,6 +5,7 @@ mod nbt_files;
 mod world_backup;
 
 use std::env::args;
+use std::ffi::OsStr;
 use std::io::{Error, ErrorKind, Result};
 use std::path::{Path, PathBuf};
 
@@ -44,8 +45,14 @@ fn main() -> Result<()> {
     }
     .expect_exit("Invalid action; '--print' or '--revive'");
 
+    let world_name: &str = world_dir
+        .file_name()
+        .expect_exit("Failed to extract world name")
+        .to_str()
+        .expect_exit("Failed to convert world name to safe string");
+
     match mode {
-        EditMode::Revive => create_world_backup()?,
+        EditMode::Revive => create_world_backup(world_name)?,
         _ => (),
     };
 
