@@ -79,7 +79,7 @@ fn print_mode(db: &mut DB) -> Result<()> {
     for (key, value) in entities {
         match handle_entity(&key, value) {
             Err(err) => {
-                println!("{err}");
+                eprintln!("{err}");
                 continue;
             }
             _ => (),
@@ -98,7 +98,7 @@ fn revive_mode(db: &mut DB) -> Result<()> {
         let (key_str, mut nbt, dead): (String, Blob, bool) = match handle_entity(&key, value) {
             Ok(value) => value,
             Err(err) => {
-                println!("{err}");
+                eprintln!("{err}");
                 continue;
             }
         };
@@ -115,7 +115,7 @@ fn revive_mode(db: &mut DB) -> Result<()> {
 
         match db.put(&key, &recompile) {
             Err(err) => {
-                println!("DB writing issue for {:?}: {err}", key_str);
+                eprintln!("DB writing issue for {:?}: {err}", key_str);
                 continue;
             }
             _ => (),
