@@ -1,14 +1,17 @@
-use std::io::{Error, ErrorKind, Result};
-use std::time::{Duration, SystemTime};
+use std::{io::Result, time::SystemTime};
+
+use chrono::{DateTime, Utc};
+use iso8601_timestamp::Timestamp;
 
 pub fn create_world_backup() -> Result<()> {
     println!("Making world backup...");
 
-    let sys_time: Duration = SystemTime::now()
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .map_err(|err| Error::new(ErrorKind::Other, err))?;
+    let timestamp: Timestamp = Timestamp::now_utc();
+    let system_time: SystemTime = timestamp.into();
+    let datetime: DateTime<Utc> = DateTime::from(system_time);
+    let formatted: String = datetime.format("%Y-%m-%d_%H.%M.%S").to_string();
 
-    println!("{:?}", sys_time);
+    println!("{:?}", formatted);
 
     println!("<to be implemented>");
 
