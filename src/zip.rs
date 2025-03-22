@@ -1,6 +1,6 @@
 use chrono::{DateTime, Datelike, Local, Timelike};
 use std::fs::{metadata, File, Metadata};
-use std::io::{BufWriter, Read, Write};
+use std::io::{BufWriter, Error, ErrorKind, Read, Write};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 use walkdir::WalkDir;
@@ -10,7 +10,7 @@ use zip::{
 };
 
 /// Converts a `std::fs::Metadata` to a ZIP-compatible modification date.
-fn get_zip_time(metadata: &Metadata) -> zip::DateTime {
+fn get_zip_time(metadata: &Metadata) -> std::io::Result<zip::DateTime> {
     let modified: SystemTime = metadata
         .modified()
         .unwrap_or_else(|_| std::time::SystemTime::now());
@@ -23,7 +23,7 @@ fn get_zip_time(metadata: &Metadata) -> zip::DateTime {
         datetime.minute() as u8,
         datetime.second() as u8,
     )
-    .unwrap()
+    .map_err(|err| Error::new(ErrorKind::InvalidInput, format!("{err}")))
 }
 
 /// Creates a ZIP archive from a directory, similar to `zip-archive`.
@@ -47,10 +47,12 @@ pub fn zip_directory(src_dir: &Path, zip_path: &Path) -> std::io::Result<()> {
 
     for entry in WalkDir::new(&src_dir).into_iter().filter_map(Result::ok) {
         let path: &Path = entry.path();
-        let relative_path: &Path = path.strip_prefix(&src_dir).unwrap();
+        let relative_path: &Path = path
+            .strip_prefix(&src_dir)
+            .map_err(|err| Error::new(ErrorKind::NotFound, format!("{err}")))?;
         let metadata: Metadata = metadata(path)?;
 
-        let options: FileOptions<'_, ()> = options.last_modified_time(get_zip_time(&metadata)); // Preserve timestamp
+        let options: FileOptions<'_, ()> = options.last_modified_time(get_zip_time(&metadata)?); // Preserve timestamp
 
         if path.is_dir() {
             zip.add_directory(relative_path.to_string_lossy(), options)?;
