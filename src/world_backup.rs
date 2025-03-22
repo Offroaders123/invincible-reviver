@@ -4,6 +4,7 @@ use std::path::PathBuf;
 use std::time::SystemTime;
 
 use crate::expect_exit::ExpectExit;
+use crate::zip::zip_directory;
 use chrono::{DateTime, Utc};
 use iso8601_timestamp::Timestamp;
 
@@ -24,7 +25,7 @@ pub fn create_world_backup(world_dir: &Path) -> Result<()> {
     let output_file: PathBuf = parent_dir.join(filename);
     println!("{:?}", output_file);
 
-    create_archive(world_dir, &output_file)?;
+    create_archive(world_dir, &output_file).expect_exit("Could not create archive of world");
 
     Ok(())
 }
@@ -49,7 +50,7 @@ fn create_backup_timestamp() -> String {
 }
 
 fn create_archive(world_dir: &Path, output_file: &Path) -> Result<()> {
-    println!("<to be implemented>");
+    zip_directory(world_dir, output_file)?;
 
     Ok(())
 }

@@ -3,6 +3,7 @@ mod hex_string;
 mod mojang_options;
 mod nbt_files;
 mod world_backup;
+mod zip;
 
 use std::env::args;
 use std::io::{Error, ErrorKind, Result};
