@@ -6,6 +6,7 @@ mod world_backup;
 mod zip;
 
 use std::env::args;
+use std::fs::remove_file;
 use std::io::{Error, ErrorKind, Result};
 use std::path::{Path, PathBuf};
 
@@ -50,7 +51,7 @@ fn main() -> Result<()> {
     match mode {
         EditMode::Revive => {
             if backup {
-                create_world_backup(world_dir)?;
+                create_world_backup(world_dir).expect_exit("Could not create world backup");
             } else {
                 println!("<backup skipped>");
             }
@@ -65,14 +66,20 @@ fn main() -> Result<()> {
 
     println!("Opening world {:?}\n", world_dir);
 
-    let mut db: DB = DB::open(db_dir, options).expect_exit("Failed to open database");
+    let mut db: DB = DB::open(&db_dir, options).expect_exit("Failed to open database");
 
     match mode {
-        EditMode::Print => print_mode(&mut db)?,
-        EditMode::Revive => revive_mode(&mut db)?,
+        EditMode::Print => print_mode(&mut db).expect_exit("Failed to run print mode"),
+        EditMode::Revive => revive_mode(&mut db).expect_exit("Failed to run revive mode"),
     }
 
     db.close().expect_exit("Failed to close database");
+
+    let lock_path: PathBuf = db_dir.join("LOCK");
+
+    // This is temporary hopefully, seems to be a bug with `rusty-leveldb`.
+    // https://github.com/dermesser/leveldb-rs/issues/54
+    remove_file(lock_path).expect_exit("Could not remove database LOCK file");
 
     Ok(())
 }
