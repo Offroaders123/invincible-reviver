@@ -1,7 +1,6 @@
 use chrono::{DateTime, Datelike, Local, Timelike};
 use std::fs::{metadata, File, Metadata};
 use std::io::{BufWriter, Read, Write};
-use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 use walkdir::WalkDir;
@@ -9,6 +8,9 @@ use zip::{
     write::{FileOptions, SimpleFileOptions},
     CompressionMethod, ZipWriter,
 };
+
+#[cfg(unix)]
+use std::os::unix::fs::PermissionsExt;
 
 /// Converts a `std::fs::Metadata` to a ZIP-compatible modification date.
 fn get_zip_time(metadata: &Metadata) -> zip::DateTime {
@@ -28,6 +30,11 @@ fn get_zip_time(metadata: &Metadata) -> zip::DateTime {
 }
 
 /// Creates a ZIP archive from a directory, similar to `zip-archive`.
+///
+/// Maintains timestamps across platforms.
+///
+/// * On Unix (macOS/Linux), it preserves file permissions.
+/// * On Windows, permissions are ignored (as ZIP does not store Windows ACLs).
 ///
 /// # Arguments
 /// * `src_dir` - Path to the source directory.
@@ -49,9 +56,12 @@ pub fn zip_directory(src_dir: &Path, zip_path: &Path) -> std::io::Result<()> {
         let relative_path: &Path = path.strip_prefix(&src_dir).unwrap();
         let metadata: Metadata = metadata(path)?;
 
-        let options: FileOptions<'_, ()> = options
-            .last_modified_time(get_zip_time(&metadata)) // Preserve timestamp
-            .unix_permissions(metadata.permissions().mode()); // Preserve permissions
+        let mut options: FileOptions<'_, ()> = options.last_modified_time(get_zip_time(&metadata)); // Preserve timestamp
+
+        #[cfg(unix)]
+        {
+            options = options.unix_permissions(metadata.permissions().mode()); // Preserve permissions
+        }
 
         if path.is_dir() {
             zip.add_directory(relative_path.to_string_lossy(), options)?;
