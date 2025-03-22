@@ -1,6 +1,5 @@
 use std::io::{Error, ErrorKind, Result};
 use std::path::Path;
-use std::path::PathBuf;
 use std::time::SystemTime;
 
 use crate::expect_exit::ExpectExit;
@@ -23,10 +22,7 @@ pub fn create_world_backup(world_dir: &Path) -> Result<()> {
         .expect_exit("Could not extract directory path to world");
     println!("{:?}, {:?}", world_dir, parent_dir);
 
-    let output_file: PathBuf = parent_dir.join(filename);
-    println!("{:?}", output_file);
-
-    create_archive(world_dir, &output_file).expect_exit("Could not create archive of world");
+    create_archive(world_dir, &parent_dir).expect_exit("Could not create archive of world");
 
     Ok(())
 }
@@ -50,10 +46,10 @@ fn create_backup_timestamp() -> String {
     formatted
 }
 
-fn create_archive(world_dir: &Path, output_file: &Path) -> Result<()> {
+fn create_archive(world_dir: &Path, output_dir: &Path) -> Result<()> {
     let mut archiver: Archiver = Archiver::new();
     archiver.push(world_dir);
-    archiver.set_destination(output_file);
+    archiver.set_destination(output_dir);
     archiver.set_thread_count(4);
     archiver.set_format(Format::Zip);
 
