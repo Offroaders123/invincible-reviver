@@ -15,6 +15,11 @@ pub fn create_world_backup(world_dir: &Path) -> Result<()> {
 
     println!("{filename}");
 
+    let parent_dir: &Path = world_dir
+        .parent()
+        .expect_exit("Could not extract directory path to world");
+    println!("{:?}, {:?}", world_dir, parent_dir);
+
     println!("<to be implemented>");
 
     Ok(())
