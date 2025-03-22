@@ -1,1 +1,1 @@
-cargo watch --clear --quiet --exec "run --quiet -- './test/world/Invincible Demo (unliving)' --revive" --ignore "*/world/**/*"
+cargo watch --clear --quiet --exec "run --quiet -- './test/world/Invincible Demo (unliving)' --revive --no-backup" --ignore "*/world/**/*"

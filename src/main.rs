@@ -45,8 +45,16 @@ fn main() -> Result<()> {
     }
     .expect_exit("Invalid action; '--print' or '--revive'");
 
+    let backup: bool = !args.iter().any(|arg| arg == "--no-backup");
+
     match mode {
-        EditMode::Revive => create_world_backup(world_dir)?,
+        EditMode::Revive => {
+            if backup {
+                create_world_backup(world_dir)?;
+            } else {
+                println!("<backup skipped>");
+            }
+        }
         _ => (),
     };
 
