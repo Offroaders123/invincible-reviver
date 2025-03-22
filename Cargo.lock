@@ -409,7 +409,7 @@ checksum = "8bb03732005da905c88227371639bf1ad885cc712789c011c31c5fb3ab3ccf02"
 
 [[package]]
 name = "invincible-reviver"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "bedrock-hematite-nbt",
  "chrono",

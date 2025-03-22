@@ -56,7 +56,7 @@ fn main() -> Result<()> {
             if backup {
                 create_world_backup(world_dir).expect_exit("Could not create world backup");
             } else {
-                println!("<backup skipped>\n");
+                println!("<backup skipped>");
             }
         }
         _ => (),
