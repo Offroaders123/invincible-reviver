@@ -1,12 +1,15 @@
 use std::io::Result;
+use std::path::Path;
 use std::time::SystemTime;
 
+use crate::expect_exit::ExpectExit;
 use chrono::{DateTime, Utc};
 use iso8601_timestamp::Timestamp;
 
-pub fn create_world_backup(world_name: &str) -> Result<()> {
+pub fn create_world_backup(world_dir: &Path) -> Result<()> {
     println!("Making world backup...");
 
+    let world_name: String = create_world_name(world_dir)?;
     let timestamp: String = create_backup_timestamp();
     let filename: String = format!("{world_name} - {timestamp}.mcworld");
 
@@ -15,6 +18,16 @@ pub fn create_world_backup(world_name: &str) -> Result<()> {
     println!("<to be implemented>");
 
     Ok(())
+}
+
+fn create_world_name(world_dir: &Path) -> Result<String> {
+    let world_name: String = world_dir
+        .file_name()
+        .expect_exit("Failed to extract world name")
+        .to_str()
+        .expect_exit("Failed to convert world name to safe string")
+        .to_string();
+    Ok(world_name)
 }
 
 /// YYYY-MM-DD_HH.MM.SS
