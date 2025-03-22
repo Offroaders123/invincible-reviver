@@ -58,8 +58,6 @@ fn main() -> Result<()> {
         _ => (),
     };
 
-    return Ok(());
-
     let db_dir: PathBuf = world_dir.join("db");
 
     let mut options: Options = mojang_options();
