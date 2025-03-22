@@ -1,4 +1,4 @@
-use std::io::Result;
+use std::io::{Error, ErrorKind, Result};
 use std::path::Path;
 use std::path::PathBuf;
 use std::time::SystemTime;
@@ -6,6 +6,8 @@ use std::time::SystemTime;
 use crate::expect_exit::ExpectExit;
 use chrono::{DateTime, Utc};
 use iso8601_timestamp::Timestamp;
+use zip_archive::Archiver;
+use zip_archive::Format;
 
 pub fn create_world_backup(world_dir: &Path) -> Result<()> {
     println!("Making world backup...");
@@ -24,7 +26,7 @@ pub fn create_world_backup(world_dir: &Path) -> Result<()> {
     let output_file: PathBuf = parent_dir.join(filename);
     println!("{:?}", output_file);
 
-    create_archive(world_dir, &output_file)?;
+    create_archive(world_dir, &output_file).expect_exit("Could not create archive of world");
 
     Ok(())
 }
@@ -49,7 +51,14 @@ fn create_backup_timestamp() -> String {
 }
 
 fn create_archive(world_dir: &Path, output_file: &Path) -> Result<()> {
-    println!("<to be implemented>");
+    let mut archiver: Archiver = Archiver::new();
+    archiver.push(world_dir);
+    archiver.set_destination(output_file);
+    archiver.set_thread_count(4);
+    archiver.set_format(Format::Zip);
 
-    Ok(())
+    match archiver.archive() {
+        Ok(_) => Ok(()),
+        Err(err) => Err(Error::new(ErrorKind::Other, format!("{err}"))),
+    }
 }
