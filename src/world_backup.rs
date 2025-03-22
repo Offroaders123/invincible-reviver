@@ -1,5 +1,6 @@
 use std::io::Result;
 use std::path::Path;
+use std::path::PathBuf;
 use std::time::SystemTime;
 
 use crate::expect_exit::ExpectExit;
@@ -20,7 +21,10 @@ pub fn create_world_backup(world_dir: &Path) -> Result<()> {
         .expect_exit("Could not extract directory path to world");
     println!("{:?}, {:?}", world_dir, parent_dir);
 
-    println!("<to be implemented>");
+    let output_file: PathBuf = parent_dir.join(filename);
+    println!("{:?}", output_file);
+
+    create_archive(world_dir, &output_file)?;
 
     Ok(())
 }
@@ -42,4 +46,10 @@ fn create_backup_timestamp() -> String {
     let datetime: DateTime<Utc> = DateTime::from(system_time);
     let formatted: String = datetime.format("%Y-%m-%d_%H.%M.%S").to_string();
     formatted
+}
+
+fn create_archive(world_dir: &Path, output_file: &Path) -> Result<()> {
+    println!("<to be implemented>");
+
+    Ok(())
 }
